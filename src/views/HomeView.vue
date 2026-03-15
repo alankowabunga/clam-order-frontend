@@ -41,18 +41,18 @@ const store = useOrderStore();
 
       <div v-else class="product-grid">
         <div v-for="product in store.products" :key="product.id" class="product-card glass">
-          <div class="product-badge" v-if="product.is_limited">限量</div>
+          <div class="product-badge" v-if="product.isLimited">限量</div>
           <div class="product-info">
             <h4>{{ product.name }}</h4>
             <p class="desc">{{ product.description }}</p>
             <div class="price-row">
-              <span class="price">${{ product.price_per_catty }} <span>/ 斤</span></span>
+              <span class="price">${{ product.pricePerCatty }} <span>/ 斤</span></span>
               <button @click="store.addItem(product.id)" class="btn-icon">
                 <ShoppingCart :size="18" />
               </button>
             </div>
-            <div class="stock" v-if="product.is_limited">
-              剩餘庫存: {{ product.stock_remaining }} 斤
+            <div class="stock" v-if="product.isLimited">
+              剩餘庫存: {{ product.stockRemaining }} 斤
             </div>
           </div>
         </div>

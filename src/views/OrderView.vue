@@ -12,8 +12,8 @@ const customerInfo = ref({
   name: '',
   phone: '',
   address: '',
-  payment_last_five: '',
-  is_management_office_collect: false
+  paymentLastFive: '',
+  isManagementOfficeCollect: false
 });
 
 const submissionResult = ref<any>(null);
@@ -31,13 +31,13 @@ const submitOrder = async () => {
   try {
     const res = await OrderService.submitOrder({
       items: store.currentItems,
-      delivery_method: store.deliveryMethod,
+      deliveryMethod: store.deliveryMethod,
       district: store.district,
       address: customerInfo.value.address,
-      customer_name: customerInfo.value.name,
+      customerName: customerInfo.value.name,
       phone: customerInfo.value.phone,
-      is_management_office_collect: customerInfo.value.is_management_office_collect,
-      payment_last_five: customerInfo.value.payment_last_five
+      isManagementOfficeCollect: customerInfo.value.isManagementOfficeCollect,
+      paymentLastFive: customerInfo.value.paymentLastFive
     });
     submissionResult.value = res;
     step.value = 4;
@@ -48,12 +48,12 @@ const submitOrder = async () => {
   }
 };
 
-const totalWeight = computed(() => store.calculationResult?.total_weight || 0);
+const totalWeight = computed(() => store.calculationResult?.totalWeight || 0);
 
 const canGoNext = computed(() => {
-  if (step.value === 1) return store.currentItems.length > 0 && store.calculationResult?.is_valid;
+  if (step.value === 1) return store.currentItems.length > 0 && store.calculationResult?.isValid;
   if (step.value === 2) return store.deliveryMethod === 'pickup' || (store.district && customerInfo.value.address);
-  if (step.value === 3) return customerInfo.value.name && customerInfo.value.phone && customerInfo.value.payment_last_five;
+  if (step.value === 3) return customerInfo.value.name && customerInfo.value.phone && customerInfo.value.paymentLastFive;
   return false;
 });
 
@@ -75,11 +75,11 @@ const districts = ['南區', '西區', '西屯', '北區', '北屯', '南屯', '
         <div v-for="product in store.products" :key="product.id" class="order-item-card glass">
           <div class="item-name">
             <strong>{{ product.name }}</strong>
-            <span>${{ product.price_per_catty }}/斤</span>
+            <span>${{ product.pricePerCatty }}/斤</span>
           </div>
           <div class="item-controls">
             <button @click="store.removeItem(product.id)" class="btn-qty">-</button>
-            <span class="qty">{{ store.currentItems.find(i => i.product_id === product.id)?.qty || 0 }}</span>
+            <span class="qty">{{ store.currentItems.find(i => i.productId === product.id)?.qty || 0 }}</span>
             <button @click="store.addItem(product.id)" class="btn-qty">+</button>
           </div>
         </div>
@@ -131,21 +131,21 @@ const districts = ['南區', '西區', '西屯', '北區', '北屯', '南屯', '
         </div>
         <div class="form-group">
           <label>匯款後五碼</label>
-          <input type="text" v-model="customerInfo.payment_last_five" class="form-input" placeholder="12345" />
+          <input type="text" v-model="customerInfo.paymentLastFive" class="form-input" placeholder="12345" />
         </div>
         <label class="checkbox-group mt-4">
-          <input type="checkbox" v-model="customerInfo.is_management_office_collect" />
+          <input type="checkbox" v-model="customerInfo.isManagementOfficeCollect" />
           <span>管理室代收</span>
         </label>
       </div>
 
       <div class="final-calc glass mt-4" v-if="store.calculationResult">
          <div class="calc-row"><span>小計:</span> <span>${{ store.calculationResult.subtotal }}</span></div>
-         <div class="calc-row discount"><span>量販優惠:</span> <span>{{ store.calculationResult.bulk_discount }}</span></div>
-         <div class="calc-row discount" v-if="store.calculationResult.pickup_discount"><span>自取優惠:</span> <span>{{ store.calculationResult.pickup_discount }}</span></div>
-         <div class="calc-row"><span>運費:</span> <span>${{ store.calculationResult.shipping_fee }}</span></div>
+         <div class="calc-row discount"><span>量販優惠:</span> <span>{{ store.calculationResult.bulkDiscount }}</span></div>
+         <div class="calc-row discount" v-if="store.calculationResult.pickupDiscount"><span>自取優惠:</span> <span>{{ store.calculationResult.pickupDiscount }}</span></div>
+         <div class="calc-row"><span>運費:</span> <span>${{ store.calculationResult.shippingFee }}</span></div>
          <hr/>
-         <div class="calc-row total"><span>總計:</span> <span>${{ store.calculationResult.final_amount }}</span></div>
+         <div class="calc-row total"><span>總計:</span> <span>${{ store.calculationResult.finalAmount }}</span></div>
       </div>
     </div>
 

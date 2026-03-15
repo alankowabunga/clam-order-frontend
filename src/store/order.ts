@@ -7,7 +7,7 @@ export const useOrderStore = defineStore('order', {
         products: [] as Product[],
         currentItems: [] as OrderItem[],
         calculationResult: null as OrderCalculationResponse | null,
-        deliveryMethod: 'taichung_delivery' as OrderCalculationRequest['delivery_method'],
+        deliveryMethod: 'taichung_delivery' as OrderCalculationRequest['deliveryMethod'],
         district: '',
         address: '',
         isLoading: false,
@@ -36,7 +36,7 @@ export const useOrderStore = defineStore('order', {
             try {
                 this.calculationResult = await OrderService.calculatePrice({
                     items: this.currentItems,
-                    delivery_method: this.deliveryMethod,
+                    deliveryMethod: this.deliveryMethod,
                     district: this.district,
                     address: this.address
                 });
@@ -48,17 +48,17 @@ export const useOrderStore = defineStore('order', {
         },
 
         addItem(productId: string) {
-            const item = this.currentItems.find(i => i.product_id === productId);
+            const item = this.currentItems.find(i => i.productId === productId);
             if (item) {
                 item.qty++;
             } else {
-                this.currentItems.push({ product_id: productId, qty: 1 });
+                this.currentItems.push({ productId: productId, qty: 1 });
             }
             this.updateCalculation();
         },
 
         removeItem(productId: string) {
-            const index = this.currentItems.findIndex(i => i.product_id === productId);
+            const index = this.currentItems.findIndex(i => i.productId === productId);
             if (index > -1) {
                 if (this.currentItems[index].qty > 1) {
                     this.currentItems[index].qty--;
