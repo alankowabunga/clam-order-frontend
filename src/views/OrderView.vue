@@ -152,8 +152,11 @@ const districts = ['南區', '西區', '西屯', '北區', '北屯', '南屯', '
     <div v-if="step === 4" class="step-content success-view">
       <CheckCircle :size="64" color="var(--color-success)" />
       <h3>訂單提交成功！</h3>
-      <p>訂單編號：{{ submissionResult?.order_id }}</p>
-      <p>狀態：{{ submissionResult?.status }}</p>
+      <p>訂單編號：{{ submissionResult?.orderId }}</p>
+      <p>應付總額：${{ submissionResult?.totalPay }}</p>
+      <p class="mt-4" style="color: var(--color-primary); font-weight: bold;">
+        {{ submissionResult?.message }}
+      </p>
       <router-link to="/" class="btn btn-primary mt-4">回到首頁</router-link>
     </div>
 

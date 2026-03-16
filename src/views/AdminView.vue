@@ -1,17 +1,47 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { Download, FileSpreadsheet, LayoutDashboard, Truck } from 'lucide-vue-next';
+import { AdminService } from '../api';
+import type { AdminDashboardStats, AdminOrder } from '../domain/models';
 
-// Mock Admin Data
-const orders = ref([
-  { id: 'ORD-20240315-001', customer: '王小明', phone: '0912345678', district: '南區', weight: 15, amount: 2625, status: '待核帳' },
-  { id: 'ORD-20240315-002', customer: '李小美', phone: '0987654321', district: '西屯', weight: 5, amount: 1000, status: '已付款' },
-  { id: 'ORD-20240315-003', customer: '張大華', phone: '0911222333', district: '外縣市', weight: 10, amount: 2250, status: '待出貨' },
-]);
+const stats = ref<AdminDashboardStats>({
+  todayOrdersCount: 0,
+  totalWeight: 0,
+  pendingOrdersCount: 0
+});
 
-const exportOrders = () => {
-  alert('正在匯出訂單清單 (Excel/CSV)...');
+const orders = ref<AdminOrder[]>([]);
+const isLoading = ref(true);
+
+const fetchAdminData = async () => {
+  isLoading.value = true;
+  try {
+    const [statsRes, ordersRes] = await Promise.all([
+      AdminService.getDashboardStats(),
+      AdminService.getOrders({ page: 1, size: 50 })
+    ]);
+    stats.value = statsRes;
+    orders.value = ordersRes.content;
+  } catch (err) {
+    console.error('Failed to fetch admin data', err);
+    alert('無法載入後台數據，請檢查後端連線');
+  } finally {
+    isLoading.value = false;
+  }
 };
+
+const exportOrders = async () => {
+  try {
+    await AdminService.exportOrders();
+  } catch (err) {
+    console.error('Failed to export orders', err);
+    alert('匯出清單失敗');
+  }
+};
+
+onMounted(() => {
+  fetchAdminData();
+});
 </script>
 
 <template>
@@ -29,15 +59,15 @@ const exportOrders = () => {
     <div class="stats-grid">
       <div class="stat-card glass">
         <span class="label">今日訂單</span>
-        <span class="value">24</span>
+        <span class="value">{{ stats.todayOrdersCount }}</span>
       </div>
       <div class="stat-card glass">
         <span class="label">總斤數</span>
-        <span class="value">158 斤</span>
+        <span class="value">{{ stats.totalWeight }} 斤</span>
       </div>
       <div class="stat-card glass">
         <span class="label">待處理</span>
-        <span class="value">8</span>
+        <span class="value">{{ stats.pendingOrdersCount }}</span>
       </div>
     </div>
 
@@ -54,15 +84,23 @@ const exportOrders = () => {
             <th>動作</th>
           </tr>
         </thead>
-        <tbody>
-          <tr v-for="order in orders" :key="order.id">
-            <td>{{ order.id }}</td>
-            <td>{{ order.customer }}</td>
+        <tbody v-if="!isLoading">
+          <tr v-for="order in orders" :key="order.orderId">
+            <td>{{ order.orderId }}</td>
+            <td>{{ order.customerName }}<br/><small>{{ order.phone }}</small></td>
             <td>{{ order.district }}</td>
-            <td>{{ order.weight }}斤</td>
-            <td>${{ order.amount }}</td>
-            <td><span :class="['status-badge', order.status]">{{ order.status }}</span></td>
+            <td>{{ order.totalWeight }}斤</td>
+            <td>${{ order.finalAmount }}</td>
+            <td><span :class="['status-badge', order.status]">{{ order.statusChinese }}</span></td>
             <td><button class="btn-text">查看</button></td>
+          </tr>
+          <tr v-if="orders.length === 0">
+            <td colspan="7" class="text-center">目前沒有訂單</td>
+          </tr>
+        </tbody>
+        <tbody v-else>
+          <tr>
+            <td colspan="7" class="text-center">載入中...</td>
           </tr>
         </tbody>
       </table>
@@ -133,9 +171,11 @@ const exportOrders = () => {
   font-weight: 600;
 }
 
-.status-badge.待核帳 { background: #fef3c7; color: #92400e; }
-.status-badge.已付款 { background: #d1fae5; color: #065f46; }
-.status-badge.待出貨 { background: #dbeafe; color: #1e40af; }
+.status-badge.PENDING_PAYMENT, .status-badge.待核帳 { background: #fef3c7; color: #92400e; }
+.status-badge.PAID, .status-badge.已付款 { background: #d1fae5; color: #065f46; }
+.status-badge.READY_TO_SHIP, .status-badge.待出貨 { background: #dbeafe; color: #1e40af; }
+.status-badge.COMPLETED { background: #f3f4f6; color: #4b5563; }
+.status-badge.CANCELLED { background: #fee2e2; color: #b91c1c; }
 
 .btn-text {
   background: none;

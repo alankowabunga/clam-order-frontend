@@ -37,3 +37,42 @@ export interface OrderSubmissionRequest extends OrderCalculationRequest {
   isManagementOfficeCollect: boolean;
   paymentLastFive: string;
 }
+
+export interface OrderSubmissionResponse {
+  orderId: string;
+  status: string;
+  totalPay: string;
+  message: string;
+}
+
+export interface AdminDashboardStats {
+  todayOrdersCount: number;
+  totalWeight: number;
+  pendingOrdersCount: number;
+}
+
+export interface AdminOrder {
+  orderId: string;
+  customerName: string;
+  phone: string;
+  deliveryMethod: string;
+  address: string;
+  district: string;
+  totalWeight: number;
+  items: string;
+  isManagementOfficeCollect: boolean;
+  paymentLastFive: string;
+  status: string;
+  statusChinese: string;
+  finalAmount: number;
+  notes: string;
+  createdAt: string;
+}
+
+export interface AdminOrdersResponse {
+  totalElements: number;
+  totalPages: number;
+  currentPage: number;
+  pageSize: number;
+  content: AdminOrder[];
+}
